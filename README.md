@@ -1,4 +1,4 @@
-Chạy dataloader.py lấy word.model
+Chạy dataloader.py lấy csv đã trộn giữa negative, positive, neutral
 
 Train bằng train.py
 
