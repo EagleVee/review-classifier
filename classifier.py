@@ -1,47 +1,58 @@
-from gensim.models import Word2Vec
-import os
-import pandas as pd
-import random
+import gensim.models.keyedvectors as word2vec
+from keras.models import load_model
+import numpy as np
+import re
+import string
 
-path = './data/'
-negative_path = 'dataset/train/train_negative_tokenized.txt'
-positive_path = 'dataset/train/train_positive_tokenized.txt'
-neutral_path = 'dataset/train/train_neutral_tokenized.txt'
+model_embedding = word2vec.KeyedVectors.load('./word.model')
 
+word_labels = []
+max_seq = 200
+embedding_size = 128
 
-class Review:
-    def __init__(self, review, label):
-        self.review = review
-        self.label = label
-
-    def get_one_hot_label(self):
-        if self.label == 'positive':
-            return [0, 1, 0]
-        elif self.label == 'negative':
-            return [0, 0, 1]
-        else:
-            return [1, 0, 0]
+for word in model_embedding.vocab.keys():
+    word_labels.append(word)
 
 
-def readdata():
-    train_set = []
-    negative_data = pd.read_csv(negative_path, sep="\n", header=None, error_bad_lines=False)
-    positive_data = pd.read_csv(positive_path, sep="\n", header=None, error_bad_lines=False)
-    neutral_data = pd.read_csv(neutral_path, sep="\n", header=None, error_bad_lines=False)
+def comment_embedding(comment):
+    matrix = np.zeros((max_seq, embedding_size))
+    words = comment.split()
+    lencmt = len(words)
 
-    for review in negative_data:
-        train_set.append(Review(review, 'negative'))
-
-    for review in positive_data:
-        train_set.append(Review(review, 'positive'))
-
-    for review in neutral_data:
-        train_set.append(Review(review, 'negative'))
-
-    random.shuffle(train_set)
-
-    return train_set
+    for i in range(max_seq):
+        indexword = i % lencmt
+        if max_seq - i < lencmt:
+            break
+        if words[indexword] in word_labels:
+            matrix[i] = model_embedding[words[indexword]]
+    matrix = np.array(matrix)
+    return matrix
 
 
-train_set = readdata()
-print(train_set)
+model = load_model("models.h5")
+
+
+def pre_process(text):
+    text = re.sub('<.*?>', '', text).strip()
+    text = re.sub('(\s)+', r'\1', text)
+    listpunctuation = string.punctuation.replace('_', '')
+    for i in listpunctuation:
+        text = text.replace(i, ' ')
+    return text.lower()
+
+
+text = "đồ ăn ở đây ngon"
+text = pre_process(text)
+
+maxtrix_embedding = np.expand_dims(comment_embedding(text), axis=0)
+maxtrix_embedding = np.expand_dims(maxtrix_embedding, axis=3)
+
+result = model.predict(maxtrix_embedding)
+result = np.argmax(result)
+if result == 0:
+    print("Label predict: Neutral")
+elif result == 1:
+    print("Label predict: Positive")
+elif result == 2:
+    print("Label predict: Negative")
+
