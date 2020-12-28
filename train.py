@@ -102,22 +102,23 @@ x_train = train_data.reshape(train_data.shape[0], sequence_length, embedding_siz
 y_train = np.array(label_data)
 
 # Define model
+# model = keras.Sequential()
 model = load_model('models.h5')
-model.add(layers.Convolution2D(num_filters, (filter_sizes, embedding_size),
-                               padding='valid',
-                               input_shape=(sequence_length, embedding_size, 1), activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(198, 1)))
-model.add(layers.Dropout(dropout_rate))
-model.add(layers.Flatten())
-model.add(layers.Dense(128, activation='relu'))
-model.add(layers.Dense(3, activation='softmax'))
-# Train model
-adam = tf.optimizers.Adam()
-
-model.compile(loss='categorical_crossentropy',
-              optimizer=adam,
-              metrics=['accuracy'])
-print(model.summary())
+# model.add(layers.Convolution2D(num_filters, (filter_sizes, embedding_size),
+#                                padding='valid',
+#                                input_shape=(sequence_length, embedding_size, 1), activation='relu'))
+# model.add(layers.MaxPooling2D(pool_size=(198, 1)))
+# model.add(layers.Dropout(dropout_rate))
+# model.add(layers.Flatten())
+# model.add(layers.Dense(128, activation='relu'))
+# model.add(layers.Dense(3, activation='softmax'))
+# # Train model
+# adam = tf.optimizers.Adam()
+#
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=adam,
+#               metrics=['accuracy'])
+# print(model.summary())
 
 model.fit(x=x_train[:7000], y=y_train[:7000], batch_size=batch_size, verbose=1, epochs=epochs,
           validation_data=(x_train[:3000], y_train[:3000]))
