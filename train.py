@@ -121,6 +121,6 @@ model = load_model('models.h5')
 # print(model.summary())
 
 model.fit(x=x_train[:7000], y=y_train[:7000], batch_size=batch_size, verbose=1, epochs=epochs,
-          validation_data=(x_train[:3000], y_train[:3000]))
+          validation_data=(x_train[7001:10000], y_train[7001:10000]))
 
 model.save('models.h5')
