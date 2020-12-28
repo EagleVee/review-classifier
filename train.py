@@ -8,12 +8,14 @@ from tensorflow.keras import layers
 from tensorflow import keras
 import tensorflow as tf
 from keras.preprocessing import sequence
+from keras.models import load_model
 from tqdm import tqdm
 
 path = './data/'
 negative_path = 'dataset/train/train_negative_tokenized.txt'
 positive_path = 'dataset/train/train_positive_tokenized.txt'
 neutral_path = 'dataset/train/train_neutral_tokenized.txt'
+csv_path = 'shuffled_data.csv'
 
 
 class Review:
@@ -31,29 +33,10 @@ class Review:
 
 
 def readdata():
-    review_list = []
-    negative_data = pd.read_csv(negative_path, sep="\n", header=None, error_bad_lines=False)
-    positive_data = pd.read_csv(positive_path, sep="\n", header=None, error_bad_lines=False)
-    neutral_data = pd.read_csv(neutral_path, sep="\n", header=None, error_bad_lines=False)
+    data = pd.DataFrame()
+    data = pd.concat([data, pd.read_csv(csv_path, sep=',')])
 
-    for review in negative_data[0]:
-        review_list.append(Review(review, 'negative'))
-
-    for review in positive_data[0]:
-        review_list.append(Review(review, 'positive'))
-
-    for review in neutral_data[0]:
-        review_list.append(Review(review, 'negative'))
-
-    random.shuffle(review_list)
-
-    reviews = []
-    labels = []
-    for labeled_review in review_list:
-        reviews.append(labeled_review.review)
-        labels.append(labeled_review.label)
-
-    return reviews, labels
+    return data.review, data.label
 
 
 reviews, labels = readdata()
@@ -119,7 +102,7 @@ x_train = train_data.reshape(train_data.shape[0], sequence_length, embedding_siz
 y_train = np.array(label_data)
 
 # Define model
-model = keras.Sequential()
+model = load_model('models.h5')
 model.add(layers.Convolution2D(num_filters, (filter_sizes, embedding_size),
                                padding='valid',
                                input_shape=(sequence_length, embedding_size, 1), activation='relu'))
